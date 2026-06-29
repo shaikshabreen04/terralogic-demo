@@ -38,6 +38,12 @@ export function useAuth({ users, onLogin }: UseAuthParams) {
       return;
     }
 
+    const filteredUsers = users.filter((user) => user.role.toLowerCase() === nextRole.toLowerCase());
+    if (nextRole === "Manager" && filteredUsers.length === 1) {
+      setLoginUsername(filteredUsers[0].name);
+      return;
+    }
+
     setLoginUsername("");
   };
 

@@ -18,7 +18,7 @@ type StockRow = {
 type CurrentStockTableProps = {
   rows: StockRow[];
   emptyMessage: string;
-  onRaiseRequest: (ingredientId: number) => void;
+  onRaiseRequest?: (ingredientId: number) => void;
 };
 
 export default function CurrentStockTable({ rows, emptyMessage, onRaiseRequest }: CurrentStockTableProps) {
@@ -42,7 +42,7 @@ export default function CurrentStockTable({ rows, emptyMessage, onRaiseRequest }
                 <th style={styles.th}>Stock</th>
                 <th style={styles.th}>Par Level</th>
                 <th style={styles.th}>Status</th>
-                <th style={styles.th}>Action</th>
+                {onRaiseRequest && <th style={styles.th}>Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -66,11 +66,13 @@ export default function CurrentStockTable({ rows, emptyMessage, onRaiseRequest }
                       {row.isLow ? "Low Stock" : "Healthy"}
                     </span>
                   </td>
-                  <td style={styles.td}>
-                    <button onClick={() => onRaiseRequest(row.ingredient.id)} style={styles.secondaryButton} className="dashboard-button">
-                      Raise Request
-                    </button>
-                  </td>
+                  {onRaiseRequest && (
+                    <td style={styles.td}>
+                      <button onClick={() => onRaiseRequest(row.ingredient.id)} style={styles.secondaryButton} className="dashboard-button">
+                        Raise Request
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>

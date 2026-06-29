@@ -49,12 +49,56 @@ export default function DashboardLayout({
 
       <style jsx global>{`
         * { box-sizing: border-box; }
-        .dashboard-card { transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
-        .dashboard-card:hover { transform: translateY(-3px); box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08); }
-        .dashboard-button { transition: transform 180ms ease, box-shadow 180ms ease; }
-        .dashboard-button:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2); }
-        .dashboard-input:focus { border-color: #2563eb !important; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12); outline: none; }
-        .dashboard-table-row:hover td { background: #f8fbff !important; }
+        
+        /* Modern Premium Scrollbar */
+        ::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+
+        /* Smooth Interactive Transitions */
+        .dashboard-card {
+          transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .dashboard-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02);
+          border-color: #cbd5e1 !important;
+        }
+        .dashboard-button {
+          transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .dashboard-button:hover {
+          filter: brightness(0.96);
+          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+        .dashboard-button:active {
+          transform: scale(0.98);
+        }
+        .dashboard-input {
+          transition: all 180ms ease;
+        }
+        .dashboard-input:focus {
+          border-color: #2563eb !important;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+          outline: none;
+        }
+        .dashboard-table-row {
+          transition: background-color 150ms ease;
+        }
+        .dashboard-table-row:hover td {
+          background: #f8fafc !important;
+        }
       `}</style>
     </main>
   );

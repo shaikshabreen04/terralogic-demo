@@ -17,6 +17,7 @@ type Ingredient = {
   name: string;
   unit: string;
   par: number;
+  price: number;
   property_id: number;
   property: string;
 };
@@ -35,6 +36,7 @@ type TransactionLedgerEntry = {
   unit: string;
   property: string;
   type: "receive" | "issue" | "consume" | "waste" | "adjust_add" | "adjust_remove";
+  notes: string;
 };
 
 type PurchaseRequest = {
@@ -94,7 +96,7 @@ export default function StoreKeeperView({
   return (
     <>
       <section style={styles.gridTwo}>
-        <div style={styles.card} className="dashboard-card">
+        <div style={{ ...styles.card, maxHeight: 360, overflowY: "auto" }} className="dashboard-card">
           <div style={styles.cardHeader}>
             <div>
               <h2 style={styles.cardTitle}>Chef Ingredient Requests</h2>
@@ -138,7 +140,7 @@ export default function StoreKeeperView({
           </div>
         </div>
 
-        <div style={styles.card} className="dashboard-card">
+        <div style={{ ...styles.card, maxHeight: 360, overflowY: "auto" }} className="dashboard-card">
           <div style={styles.cardHeader}>
             <div>
               <h2 style={styles.cardTitle}>Issue to Kitchen / Waste</h2>
@@ -203,7 +205,7 @@ export default function StoreKeeperView({
           </div>
         </div>
 
-        <div style={styles.card} className="dashboard-card">
+        <div style={{ ...styles.card, maxHeight: 360, overflowY: "auto" }} className="dashboard-card">
           <div style={styles.cardHeader}>
             <div>
               <h2 style={styles.cardTitle}>Ordered Deliveries Pending</h2>
@@ -237,7 +239,9 @@ export default function StoreKeeperView({
           </div>
         </div>
 
-        <CurrentStockTable rows={stockRows} emptyMessage={emptyMessage} onRaiseRequest={onRaiseRequest} />
+        <div style={{ maxHeight: 360, overflowY: "auto", borderRadius: 22 }}>
+          <CurrentStockTable rows={stockRows} emptyMessage={emptyMessage} onRaiseRequest={onRaiseRequest} />
+        </div>
       </section>
       <section style={styles.gridSingle}>
         <TransactionLedger entries={ledgerEntries} />

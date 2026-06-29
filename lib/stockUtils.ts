@@ -85,17 +85,14 @@ export const getRecentConsumptionRows = (
   loggedInUser: LoggedInUser | null,
 ) => {
   const visibleIngredientIds = new Set(visibleIngredients.map((ingredient) => ingredient.id));
-  return getTransactionRows(
-    transactions.filter((transaction) => {
-      if (transaction.type !== "consume" || !visibleIngredientIds.has(transaction.ingredientId)) return false;
-      if (loggedInUser?.role === "Chef") {
-        return String(transaction.notes).toLowerCase().includes(`chef: ${loggedInUser.name.toLowerCase()}`);
-      }
-      return true;
-    }),
-    ingredients,
-    selectedPropertyId,
-  ).slice(0, 8);
+  const filtered = transactions.filter((transaction) => {
+    return (
+      transaction.type === "consume" &&
+      transaction.propertyId === selectedPropertyId &&
+      visibleIngredientIds.has(transaction.ingredientId)
+    );
+  });
+  return getTransactionRows(filtered, ingredients, selectedPropertyId).slice(0, 5);
 };
 
 export const getAvailableRecipes = (
@@ -237,7 +234,7 @@ export const calculateDashboardMetrics = (
   const propertyTransactions = transactions.filter((transaction) => transaction.propertyId === selectedPropertyId);
 
   const foodCost = propertyTransactions
-    .filter((transaction) => ["issue", "consume", "waste", "adjust_remove"].includes(transaction.type))
+    .filter((transaction) => transaction.type === "receive")
     .reduce((sum, transaction) => {
       const ingredient = ingredients.find((item) => item.id === transaction.ingredientId);
       return sum + transaction.qty * (ingredient?.price || 0);
@@ -251,7 +248,7 @@ export const calculateDashboardMetrics = (
     }, 0);
 
   const actualConsumptionCost = propertyTransactions
-    .filter((transaction) => ["issue", "consume", "waste"].includes(transaction.type))
+    .filter((transaction) => transaction.type === "issue")
     .reduce((sum, transaction) => {
       const ingredient = ingredients.find((item) => item.id === transaction.ingredientId);
       return sum + transaction.qty * (ingredient?.price || 0);
@@ -270,12 +267,12 @@ export const calculateDashboardMetrics = (
     lowStockItems,
     openRequests,
     pendingRequests,
-    foodCost,
+    foodCost: roundToTwo(foodCost),
     approvedRequests,
-    theoreticalConsumptionCost,
-    actualConsumptionCost,
-    wastageCost,
-    variance,
+    theoreticalConsumptionCost: roundToTwo(theoreticalConsumptionCost),
+    actualConsumptionCost: roundToTwo(actualConsumptionCost),
+    wastageCost: roundToTwo(wastageCost),
+    variance: roundToTwo(variance),
   };
 };
 
@@ -304,15 +301,35 @@ export const resolvePropertySelection = (
 };
 
 export const mapTransactions = (rows: Array<Record<string, unknown>>, propertyMap: Map<number, string>): Transaction[] =>
-  rows.map((row) => ({
-    id: Number(row.id),
-    ingredientId: Number(row.ingredient_id),
-    type: (row.transaction_type as TransactionType) ?? "receive",
-    qty: Number(row.quantity ?? 0),
-    property: propertyMap.get(Number(row.property_id)) ?? "",
-    propertyId: Number(row.property_id),
-    notes: String(row.notes ?? ""),
-  }));
+  rows.map((row) => {
+    const rawType = String(row.transaction_type ?? "");
+    let type: TransactionType = "receive";
+    const s = rawType.toLowerCase().trim();
+    if (s === "receive" || s === "stock received into storeroom") {
+      type = "receive";
+    } else if (s === "issue" || s === "issued to kitchen") {
+      type = "issue";
+    } else if (s === "consume" || s === "kitchen consumed in recipe") {
+      type = "consume";
+    } else if (s === "waste" || s === "marked as waste") {
+      type = "waste";
+    } else if (s === "adjust_add") {
+      type = "adjust_add";
+    } else if (s === "adjust_remove") {
+      type = "adjust_remove";
+    } else {
+      type = rawType as TransactionType;
+    }
+    return {
+      id: Number(row.id),
+      ingredientId: Number(row.ingredient_id),
+      type,
+      qty: Number(row.quantity ?? 0),
+      property: propertyMap.get(Number(row.property_id)) ?? "",
+      propertyId: Number(row.property_id),
+      notes: String(row.notes ?? ""),
+    };
+  });
 
 export const mapRequests = (
   rows: Array<Record<string, unknown>>,

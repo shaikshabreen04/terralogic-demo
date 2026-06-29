@@ -8,6 +8,7 @@ type Ingredient = {
   name: string;
   unit: string;
   par: number;
+  price: number;
   property_id: number;
   property: string;
 };
@@ -29,6 +30,7 @@ type TransactionLedgerEntry = {
   unit: string;
   property: string;
   type: "receive" | "issue" | "consume" | "waste" | "adjust_add" | "adjust_remove";
+  notes: string;
 };
 
 type StockRow = {
@@ -43,6 +45,7 @@ type ChefViewProps = {
   stockRows: StockRow[];
   availableRecipes: RecipeDefinition[];
   recentConsumptionEntries: TransactionLedgerEntry[];
+  chefRequests?: any;
   emptyMessage: string;
   onRaiseRequest: (ingredientId: number) => void;
   onMarkDishPrepared: (dishName: string, quantity: number) => Promise<void> | void;

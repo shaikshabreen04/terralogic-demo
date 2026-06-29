@@ -38,17 +38,11 @@ export default function Navbar({ loggedInUser, property, properties, canChangePr
             ))}
           </select>
         ) : null}
-        {isStoreKeeper ? (
-          <div style={{ ...styles.propertyPill, background: "rgba(37, 99, 235, 0.08)", color: "#1d4ed8" }}>
-            Locked to your assigned property
-          </div>
-        ) : null}
+
         <div style={styles.userInfo}>
           <div style={styles.userName}>{loggedInUser.name}</div>
           <div style={styles.userDetails}>
             <span style={styles.userRole}>{loggedInUser.role}</span>
-            <span style={styles.userSeparator}>•</span>
-            <span style={styles.userSubRole}>{loggedInUser.sub_role}</span>
           </div>
         </div>
         <button onClick={onLogout} style={styles.logoutButton} className="dashboard-button">
