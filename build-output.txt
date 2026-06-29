@@ -1,0 +1,35 @@
+﻿
+> stockroom@0.1.0 build
+> next build
+
+Ôû▓ Next.js 16.2.9 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Ô£ô Compiled successfully in 3.3s
+  Running TypeScript ...
+node.exe : Failed to type check.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to type check.:String) [], 
+    RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+./components/ChefView.tsx:64:11
+Type error: Type 'Ingredient[]' is not assignable to type 'import("C:/Users/T 
+LOKESH/Downloads/project demo/stockroom/types/index").Ingredient[]'.
+  Type 'Ingredient' is not assignable to type 'import("C:/Users/T 
+LOKESH/Downloads/project demo/stockroom/types/index").Ingredient'.
+    Property 'price' is missing in type 'Ingredient' but required in type 
+'IngredientRecord'.
+
+  [90m62 |[0m       <section style={styles.gridSingle}>
+  [90m63 |[0m         <[33mMockPOSRecipeDeduction[0m
+[31m[1m>[0m [90m64 |[0m           currentIngredients={currentIngredients}
+  [90m   |[0m           [31m[1m^[0m
+  [90m65 |[0m           availableRecipes={availableRecipes}
+  [90m66 |[0m           emptyMessage={emptyMessage}
+  [90m67 |[0m           onMarkDishPrepared={onMarkDishPrepared}
+Next.js build worker exited with code: 1 and signal: null
