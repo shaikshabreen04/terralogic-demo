@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import {
   calculateDashboardMetrics,
+  calculateKitchenStock,
+  calculateStoreroomStock,
   formatCurrency,
   getAccessibleIngredients,
   getAvailableRecipes,
   getRecentConsumptionRows,
-  getStock,
   getTransactionRows,
 } from "../lib/stockUtils";
 import type {
@@ -64,16 +65,19 @@ export function useStock({
   const stockRows = useMemo<StockRow[]>(
     () =>
       currentIngredients.map((ingredient) => {
-        const stock = getStock(transactions, ingredient.id, selectedPropertyId);
-        const parLevel = ingredient.par ?? 0;
+        const isChef = loggedInUser?.role === "Chef";
+        const stock = isChef
+          ? calculateKitchenStock(ingredient.id, selectedPropertyId, transactions)
+          : calculateStoreroomStock(ingredient.id, selectedPropertyId, transactions);
+        const parLevel = isChef ? 0 : (ingredient.par ?? 0);
         return {
           ingredient,
           stock,
           parLevel,
-          isLow: stock <= parLevel,
+          isLow: isChef ? stock <= parLevel : stock < parLevel,
         };
       }),
-    [currentIngredients, transactions, selectedPropertyId],
+    [currentIngredients, transactions, selectedPropertyId, loggedInUser?.role],
   );
 
   const ledgerEntries = useMemo(() => getTransactionRows(transactions, ingredients, selectedPropertyId), [transactions, ingredients, selectedPropertyId]);

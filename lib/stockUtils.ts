@@ -47,6 +47,32 @@ export const getStock = (transactions: Transaction[], ingredientId: number, prop
       return total;
     }, 0);
 
+export const calculateStoreroomStock = (
+  ingredientId: number,
+  propertyId: number | null,
+  transactions: Transaction[],
+): number =>
+  transactions
+    .filter((transaction) => transaction.ingredientId === ingredientId && transaction.propertyId === propertyId)
+    .reduce((total, transaction) => {
+      if (transaction.type === "receive" || transaction.type === "adjust_add") return total + Number(transaction.qty);
+      if (transaction.type === "issue" || transaction.type === "waste" || transaction.type === "adjust_remove") return total - Number(transaction.qty);
+      return total;
+    }, 0);
+
+export const calculateKitchenStock = (
+  ingredientId: number,
+  propertyId: number | null,
+  transactions: Transaction[],
+): number =>
+  transactions
+    .filter((transaction) => transaction.ingredientId === ingredientId && transaction.propertyId === propertyId)
+    .reduce((total, transaction) => {
+      if (transaction.type === "issue") return total + Number(transaction.qty);
+      if (transaction.type === "consume") return total - Number(transaction.qty);
+      return total;
+    }, 0);
+
 export const getAccessibleIngredients = (
   loggedInUser: LoggedInUser | null,
   selectedPropertyId: number | null,
@@ -200,7 +226,14 @@ export const calculateDashboardMetrics = (
   ingredients: Ingredient[],
   loggedInUser: LoggedInUser | null,
 ) : DashboardMetrics => {
-  const lowStockItems = currentIngredients.filter((ingredient) => getStock(transactions, ingredient.id, selectedPropertyId) <= (ingredient.par ?? 0)).length;
+  const lowStockItems = currentIngredients.filter((ingredient) => {
+    const isChef = loggedInUser?.role === "Chef";
+    const stock = isChef
+      ? calculateKitchenStock(ingredient.id, selectedPropertyId, transactions)
+      : calculateStoreroomStock(ingredient.id, selectedPropertyId, transactions);
+    const parLevel = isChef ? 0 : (ingredient.par ?? 0);
+    return isChef ? stock <= parLevel : stock < parLevel;
+  }).length;
   const normalizedRequests = propertyRequests.map((request) => ({ ...request, status: String(request.status).toLowerCase() }));
 
   const openRequests = normalizedRequests.filter((request) => {
