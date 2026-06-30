@@ -164,6 +164,14 @@ export default function Dashboard({ initialUsers, initialProperties }: Dashboard
     const quantity = Number(qty);
     if (Number.isNaN(quantity) || quantity <= 0) return alert("Enter a valid quantity");
 
+    // Validation: current_stock cannot be negative
+    if (["issue", "waste", "adjust_remove"].includes(type)) {
+      const currentStock = stock.stockRows.find((row) => row.ingredient.id === ingredientId)?.stock ?? 0;
+      if (currentStock - quantity < 0) {
+        return alert(`Transaction rejected: Insufficient stock. Remaining stock cannot be negative (Current Stock: ${currentStock}, Attempted: ${quantity}).`);
+      }
+    }
+
     try {
       const movementNotes =
         type === "issue"
@@ -338,6 +346,13 @@ export default function Dashboard({ initialUsers, initialProperties }: Dashboard
 
   const handleIssueReceivedRequest = async (requestId: number, ingredientId: number, requestedQty: number) => {
     if (!loggedInUser || !selectedPropertyId) return alert("Select a property first");
+
+    // Validation: current_stock cannot be negative
+    const currentStock = stock.stockRows.find((row) => row.ingredient.id === ingredientId)?.stock ?? 0;
+    if (currentStock - requestedQty < 0) {
+      alert(`Transaction rejected: Insufficient stock in storeroom to issue to kitchen (Current Stock: ${currentStock}, Attempted: ${requestedQty}).`);
+      return;
+    }
 
     try {
       await issueReceivedRequest(requestId, ingredientId, selectedPropertyId, requestedQty);

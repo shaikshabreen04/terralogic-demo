@@ -68,9 +68,11 @@ export default function CurrentStockTable({ rows, emptyMessage, onRaiseRequest }
                   </td>
                   {onRaiseRequest && (
                     <td style={styles.td}>
-                      <button onClick={() => onRaiseRequest(row.ingredient.id)} style={styles.secondaryButton} className="dashboard-button">
-                        Raise Request
-                      </button>
+                      {row.isLow ? (
+                        <button onClick={() => onRaiseRequest(row.ingredient.id)} style={styles.secondaryButton} className="dashboard-button">
+                          Raise Request
+                        </button>
+                      ) : null}
                     </td>
                   )}
                 </tr>

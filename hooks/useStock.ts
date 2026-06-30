@@ -69,12 +69,18 @@ export function useStock({
         const stock = isChef
           ? calculateKitchenStock(ingredient.id, selectedPropertyId, transactions)
           : calculateStoreroomStock(ingredient.id, selectedPropertyId, transactions);
-        const parLevel = isChef ? 0 : (ingredient.par ?? 0);
+        
+        // current_stock = available inventory
+        // par_level = minimum required inventory
+        // low_stock = current_stock <= par_level
+        const parLevel = ingredient.par;
+        const isLow = stock <= parLevel;
+
         return {
           ingredient,
           stock,
           parLevel,
-          isLow: isChef ? stock <= parLevel : stock < parLevel,
+          isLow,
         };
       }),
     [currentIngredients, transactions, selectedPropertyId, loggedInUser?.role],

@@ -38,40 +38,49 @@ export const formatCurrency = (value: number | string): string => {
   return `₹${display}`;
 };
 
-export const getStock = (transactions: Transaction[], ingredientId: number, propertyId: number | null): number =>
-  transactions
+export const getStock = (transactions: Transaction[], ingredientId: number, propertyId: number | null): number => {
+  const stock = transactions
     .filter((transaction) => transaction.ingredientId === ingredientId && transaction.propertyId === propertyId)
     .reduce((total, transaction) => {
       if (transaction.type === "receive" || transaction.type === "adjust_add") return total + Number(transaction.qty);
       if (["issue", "consume", "waste", "adjust_remove"].includes(transaction.type)) return total - Number(transaction.qty);
       return total;
     }, 0);
+  // current_stock cannot be negative
+  return Math.max(0, stock);
+};
 
 export const calculateStoreroomStock = (
   ingredientId: number,
   propertyId: number | null,
   transactions: Transaction[],
-): number =>
-  transactions
+): number => {
+  const stock = transactions
     .filter((transaction) => transaction.ingredientId === ingredientId && transaction.propertyId === propertyId)
     .reduce((total, transaction) => {
       if (transaction.type === "receive" || transaction.type === "adjust_add") return total + Number(transaction.qty);
       if (transaction.type === "issue" || transaction.type === "waste" || transaction.type === "adjust_remove") return total - Number(transaction.qty);
       return total;
     }, 0);
+  // current_stock cannot be negative
+  return Math.max(0, stock);
+};
 
 export const calculateKitchenStock = (
   ingredientId: number,
   propertyId: number | null,
   transactions: Transaction[],
-): number =>
-  transactions
+): number => {
+  const stock = transactions
     .filter((transaction) => transaction.ingredientId === ingredientId && transaction.propertyId === propertyId)
     .reduce((total, transaction) => {
       if (transaction.type === "issue") return total + Number(transaction.qty);
       if (transaction.type === "consume") return total - Number(transaction.qty);
       return total;
     }, 0);
+  // current_stock cannot be negative
+  return Math.max(0, stock);
+};
 
 export const getAccessibleIngredients = (
   loggedInUser: LoggedInUser | null,
@@ -231,8 +240,12 @@ export const calculateDashboardMetrics = (
     const stock = isChef
       ? calculateKitchenStock(ingredient.id, selectedPropertyId, transactions)
       : calculateStoreroomStock(ingredient.id, selectedPropertyId, transactions);
-    const parLevel = isChef ? 0 : (ingredient.par ?? 0);
-    return isChef ? stock <= parLevel : stock < parLevel;
+    
+    // current_stock = available inventory
+    // par_level = minimum required inventory
+    // low_stock = current_stock <= par_level
+    const parLevel = ingredient.par;
+    return stock <= parLevel;
   }).length;
   const normalizedRequests = propertyRequests.map((request) => ({ ...request, status: String(request.status).toLowerCase() }));
 
@@ -387,15 +400,22 @@ export const mapRequests = (
   });
 
 export const mapIngredients = (rows: IngredientRecord[], propertyMap: Map<number, string>): Ingredient[] =>
-  rows.map((item) => ({
-    id: item.id,
-    name: item.name,
-    unit: item.unit,
-    par: Number(item.par_level ?? item.par ?? 0),
-    price: item.price,
-    property_id: item.property_id,
-    property: propertyMap.get(item.property_id) ?? "",
-  })) as Ingredient[];
+  rows.map((item) => {
+    const par = Number(item.par_level ?? item.par ?? 0);
+    // Validation: par_level must always be greater than 0
+    if (par <= 0) {
+      throw new Error(`Validation Error: Ingredient "${item.name}" has an invalid par level of ${par}. Par level must always be greater than 0.`);
+    }
+    return {
+      id: item.id,
+      name: item.name,
+      unit: item.unit,
+      par,
+      price: item.price,
+      property_id: item.property_id,
+      property: propertyMap.get(item.property_id) ?? "",
+    };
+  }) as Ingredient[];
 
 export const getTransactionRows = (transactions: Transaction[], ingredients: Ingredient[], selectedPropertyId: number | null) =>
   transactions
